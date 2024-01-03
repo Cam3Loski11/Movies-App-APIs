@@ -1,0 +1,12 @@
+{
+  "name": "movies-app-apis",
+  "version": "1.0.0",
+  "description": "Desarrollo de una pagina de peliculas usando la api de TheMovieDB",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "@Cam3Loski11",
+  "license": "MIT"
+}
