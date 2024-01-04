@@ -50,7 +50,3 @@ async function getCategories() {
 
     previewCategoriesContainer.innerHTML = htmlContent;
 }
-
-
-getCategories();
-getTrendingMoviesPreview();
