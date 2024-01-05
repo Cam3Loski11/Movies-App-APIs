@@ -11,7 +11,6 @@ const api = axios.create({
 
 async function getTrendingMoviesPreview() {
     const { data } = await api('trending/movie/day');
-
     const trendingMoviesRaw = data.results
 
     let htmlContent = ''; 
@@ -43,6 +42,38 @@ async function getCategories() {
         </div>
         `
     });
-
     categoriesPreviewList.innerHTML = htmlContent; // selector que esta en el archivo selectors
+
+    const categoryTitles = document.querySelectorAll('.category-title');
+    categoryTitles.forEach((categoryTitle, i) => {
+        categoryTitle.addEventListener('click', () => {
+            location.hash = '#category=' + categories[i].id + '-' + categoryTitle.textContent;
+            headerCategoryTitle.innerText = categoryTitle.textContent;
+        })
+    })
+};
+
+
+async function getMoviesByCategory(id) {
+    const { data } = await api('discover/movie', {
+        params: {
+            with_genres: id,
+        }
+    });
+    const movies = data.results;
+
+    let htmlContent = '';
+    movies.forEach(movie => {
+        htmlContent += `
+        <div class="movie-container">
+            <img
+                src="https://image.tmdb.org/t/p/w300/${movie.poster_path}"
+                class="movie-img"
+                alt="${movie.title}"
+            />
+        </div>
+        `
+    })
+
+    genericSection.innerHTML = htmlContent
 }
