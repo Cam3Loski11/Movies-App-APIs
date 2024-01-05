@@ -9,10 +9,6 @@ const api = axios.create({
 });
 
 
-const trendingPrevContainer = document.querySelector('.trendingPreview-movieList');
-const previewCategoriesContainer = document.querySelector('#categoriesPreview .categoriesPreview-list')
-
-
 async function getTrendingMoviesPreview() {
     const { data } = await api('trending/movie/day');
 
@@ -31,7 +27,7 @@ async function getTrendingMoviesPreview() {
         `
     });
 
-    trendingPrevContainer.innerHTML = htmlContent;
+    trendingMoviesPreviewList.innerHTML = htmlContent; // selector que esta en el archivo selectors
 }
 
 async function getCategories() {
@@ -48,5 +44,5 @@ async function getCategories() {
         `
     });
 
-    previewCategoriesContainer.innerHTML = htmlContent;
+    categoriesPreviewList.innerHTML = htmlContent; // selector que esta en el archivo selectors
 }
