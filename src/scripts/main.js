@@ -9,50 +9,71 @@ const api = axios.create({
 });
 
 
+// Utils
+function createMovies(movies, container) {
+    container.innerHTML = '';
+
+    movies.forEach(movie => {
+        if(movie.poster_path === null) {
+            return
+        } else {
+            const movieContainer = document.createElement('div');
+            movieContainer.classList.add('movie-container');
+            movieContainer.addEventListener('click', () => {
+                location.hash = '#movie=' + movie.id;
+            });
+    
+            const movieImg = document.createElement('img');
+            movieImg.classList.add('movie-img');
+            movieImg.setAttribute('alt', movie.title);
+            movieImg.setAttribute(
+                'src',
+                'https://image.tmdb.org/t/p/w300' + movie.poster_path,
+            );
+    
+            movieContainer.appendChild(movieImg);
+            container.appendChild(movieContainer);
+        }
+    });
+}
+
+function createCategories(categories, container) {
+    container.innerHTML = "";
+
+    categories.forEach(category => {  
+        const categoryContainer = document.createElement('div');
+        categoryContainer.classList.add('category-container');
+
+        const categoryTitle = document.createElement('h3');
+        categoryTitle.classList.add('category-title');
+        categoryTitle.setAttribute('id', 'id' + category.id);
+        categoryTitle.addEventListener('click', () => {
+            location.hash = `#category=${category.id}-${category.name}`;
+        });
+        const categoryTitleText = document.createTextNode(category.name);
+
+        categoryTitle.appendChild(categoryTitleText);
+        categoryContainer.appendChild(categoryTitle);
+        container.appendChild(categoryContainer);
+    });
+}
+
+
+// APIs
 async function getTrendingMoviesPreview() {
     const { data } = await api('trending/movie/day');
-    const trendingMoviesRaw = data.results
+    const trendingMoviesRaw = data.results;
 
-    let htmlContent = ''; 
-    trendingMoviesRaw.forEach(movie => {
-        htmlContent += `
-        <div class="movie-container">
-            <img
-                src="https://image.tmdb.org/t/p/w300/${movie.poster_path}"
-                class="movie-img"
-                alt="${movie.title}"
-            />
-        </div>
-        `
-    });
-
-    trendingMoviesPreviewList.innerHTML = htmlContent; // selector que esta en el archivo selectors
+    createMovies(trendingMoviesRaw, trendingMoviesPreviewList); // selector que esta en el archivo selectors
 }
 
 async function getCategories() {
     const { data } = await api('genre/movie/list');
 
-    const categories = data.genres
+    const categories = data.genres;
 
-    let htmlContent = ''; 
-    categories.forEach(category => {
-        htmlContent += `
-        <div class="category-container">
-            <h3 id="id${category.id}" class="category-title">${category.name}</h3>
-        </div>
-        `
-    });
-    categoriesPreviewList.innerHTML = htmlContent; // selector que esta en el archivo selectors
-
-    const categoryTitles = document.querySelectorAll('.category-title');
-    categoryTitles.forEach((categoryTitle, i) => {
-        categoryTitle.addEventListener('click', () => {
-            location.hash = '#category=' + categories[i].id + '-' + categoryTitle.textContent;
-            headerCategoryTitle.innerText = categoryTitle.textContent;
-        })
-    })
+    createCategories(categories, categoriesPreviewList)  ;
 };
-
 
 async function getMoviesByCategory(id) {
     const { data } = await api('discover/movie', {
@@ -62,18 +83,56 @@ async function getMoviesByCategory(id) {
     });
     const movies = data.results;
 
-    let htmlContent = '';
-    movies.forEach(movie => {
-        htmlContent += `
-        <div class="movie-container">
-            <img
-                src="https://image.tmdb.org/t/p/w300/${movie.poster_path}"
-                class="movie-img"
-                alt="${movie.title}"
-            />
-        </div>
-        `
-    })
+    createMovies(movies, genericSection);
+}
 
-    genericSection.innerHTML = htmlContent
+async function getMoviesBySearch(query) {
+    const { data } = await api('search/movie', {
+        params: {
+            query,
+        }
+    });
+    const movies = data.results;
+
+    createMovies(movies, genericSection);
+}
+
+async function getTrendingMovies() {
+    const { data } = await api('trending/movie/day');
+    const trendingMoviesRaw = data.results;
+
+    createMovies(trendingMoviesRaw, genericSection); // selector que esta en el archivo selectors
+}
+
+
+async function getMovieById(id) {
+    const { data: movie } = await api('movie/' + id);
+
+    const movieImgUrl = 'https://image.tmdb.org/t/p/w500' + movie.poster_path;
+    headerSection.style.background = `
+        linear-gradient(
+            180deg,
+            rgba(0, 0, 0, 0.35) 19.27%,
+            rgba(0, 0, 0, 0) 29.17%
+        ),
+        url(${movieImgUrl})
+    `;
+
+    movieDetailTitle.textContent = movie.title;
+    movieDetailDescription.textContent = movie.overview;
+    movieDetailScore.textContent = movie.vote_average;
+
+    createCategories(movie.genres, movieDetailCategoriesList)
+
+    getRelatedMoviesById(id);
+}
+
+async function getRelatedMoviesById(id) {
+    const { data } = await api(`movie/${id}/similar`);
+    const relatedMovies = data.results;
+
+    console.log(relatedMovies)
+
+    createMovies(relatedMovies, relatedMoviesContainer);
+    relatedMoviesContainer.scrollTo(0, 0);
 }
